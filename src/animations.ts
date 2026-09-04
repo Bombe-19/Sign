@@ -17,14 +17,15 @@ gsap.registerPlugin(ScrollTrigger);
 export function setInitialStates(): void {
   // Hero elements — hidden before timeline runs
   // NOTE: .topnav is NOT hidden — navs must always be visible on load
-  gsap.set('.sticker',              { scale: 0, opacity: 0 });
-  gsap.set('.hero__card--headline', { y: 80, opacity: 0 });
-  gsap.set('.hero__desc',           { y: 50, opacity: 0 });
+  gsap.set('.sticker',              { scale: 0, opacity: 0, transformOrigin: 'center center' });
+  gsap.set('.hero__card--headline', { y: 80, opacity: 0, rotate: -3, scale: 0.92 });
+  gsap.set('.hero__desc',           { y: 50, opacity: 0, rotate: -2 });
   gsap.set('.hero__cta .btn',       { y: 30, opacity: 0 });
   gsap.set('.verify-card',          { x: 100, opacity: 0 });
-  gsap.set('.sig-card--ref',        { opacity: 0 });
-  gsap.set('.sig-card--upload',     { opacity: 0 });
-  gsap.set('.result-badge',         { scale: 0, opacity: 0 });
+  gsap.set('.sig-card--ref',        { opacity: 0, y: 18 });
+  gsap.set('.sig-card--upload',     { opacity: 0, y: 18 });
+  gsap.set('.result-badge',         { scale: 0, opacity: 0, rotate: -8 });
+  gsap.set('.step-card',            { y: 45, opacity: 0 });
 
   // Scroll-reveal elements — hidden before they enter viewport
   gsap.utils.toArray<HTMLElement>('[data-gsap="fade-up"]').forEach((el) => {
@@ -36,6 +37,14 @@ export function setInitialStates(): void {
   gsap.utils.toArray<HTMLElement>('[data-gsap="scale-up"]').forEach((el) => {
     gsap.set(el, { scale: 0.85, opacity: 0 });
   });
+
+  gsap.utils.toArray<HTMLElement>('.sig-detect-box path').forEach((path) => {
+    gsap.set(path, { strokeDasharray: 500, strokeDashoffset: 500 });
+  });
+
+  gsap.utils.toArray<HTMLElement>('.extracted-card').forEach((card) => {
+    gsap.set(card, { y: 20, opacity: 0 });
+  });
 }
 
 /* ─────────────────────────────────────────
@@ -45,14 +54,27 @@ export function initHeroAnimations(): void {
   const tl = gsap.timeline({ defaults: { ease: 'expo.out', duration: 1.0 } });
 
   // Nav is always visible — skip it from entrance animation
-  tl.to('.sticker', { scale: 1, opacity: 1, stagger: 0.1 })
-    .to('.hero__card--headline', { y: 0, opacity: 1, duration: 1.0 }, '-=0.5')
-    .to('.hero__desc', { y: 0, opacity: 1, rotate: 0 }, '-=0.6')
-    .to('.hero__cta .btn', { y: 0, opacity: 1, stagger: 0.12 }, '-=0.5')
-    .to('.verify-card', { x: 0, opacity: 1, duration: 1.1, ease: 'expo.out' }, '-=1.1')
-    .to('.sig-card--ref',    { opacity: 1, duration: 0.7 }, '-=0.7')
-    .to('.sig-card--upload', { opacity: 1, duration: 0.7 }, '-=0.4')
-    .to('.result-badge', { scale: 1, opacity: 1, ease: 'back.out(1.7)', duration: 0.5 }, '-=0.2');
+  tl.to('.sticker', {
+      scale: 1,
+      opacity: 1,
+      stagger: 0.1,
+      duration: 0.7,
+      ease: 'back.out(1.9)'
+    })
+    .to('.hero__card--headline', {
+      y: 0,
+      opacity: 1,
+      rotate: 0,
+      scale: 1,
+      duration: 0.8,
+      ease: 'back.out(2.2)'
+    }, '-=0.5')
+    .to('.hero__desc', { y: 0, opacity: 1, rotate: 0, duration: 0.7 }, '-=0.5')
+    .to('.hero__cta .btn', { y: 0, opacity: 1, stagger: 0.12 }, '-=0.45')
+    .to('.verify-card', { x: 0, opacity: 1, duration: 1.1, ease: 'expo.out' }, '-=1.0')
+    .to('.sig-card--ref',    { opacity: 1, y: 0, duration: 0.7 }, '-=0.7')
+    .to('.sig-card--upload', { opacity: 1, y: 0, duration: 0.7 }, '-=0.4')
+    .to('.result-badge', { scale: 1, opacity: 1, rotate: 0, duration: 0.55, ease: 'back.out(1.8)' }, '-=0.2');
 }
 
 /* ─────────────────────────────────────────
@@ -106,6 +128,30 @@ export function initScrollAnimations(): void {
         toggleActions: 'play none none none',
       },
     });
+  });
+
+  gsap.utils.toArray<HTMLElement>('.step-card').forEach((card, index) => {
+    const rotation = card.classList.contains('step-card--1') ? -3.5 : card.classList.contains('step-card--2') ? 2.5 : -1.5;
+    const y = card.classList.contains('step-card--2') ? 22 : -12;
+
+    gsap.fromTo(card,
+      { opacity: 0, y: 60, rotation: rotation + 10 },
+      {
+        opacity: 1,
+        y: 0,
+        rotation,
+        duration: 0.9,
+        delay: index * 0.12,
+        ease: 'expo.out',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 88%',
+          once: true,
+        },
+      }
+    );
+
+    gsap.set(card, { y: y });
   });
 }
 
@@ -163,7 +209,78 @@ export function initCounters(): void {
   });
 }
 
+export function initDocumentReveal(): void {
+  gsap.utils.toArray<HTMLElement>('.sig-detect-box').forEach((box, index) => {
+    const path = box.querySelector('path');
+    if (!path) return;
 
+    gsap.fromTo(path,
+      { strokeDashoffset: 500 },
+      {
+        strokeDashoffset: 0,
+        duration: 1.1,
+        ease: 'power2.out',
+        delay: index * 0.18,
+        scrollTrigger: {
+          trigger: box,
+          start: 'top 88%',
+          once: true,
+        },
+      }
+    );
+
+    gsap.fromTo(box,
+      { opacity: 0, y: 22 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        delay: index * 0.12,
+        ease: 'expo.out',
+        scrollTrigger: {
+          trigger: box,
+          start: 'top 88%',
+          once: true,
+        },
+      }
+    );
+  });
+
+  gsap.utils.toArray<HTMLElement>('.extracted-card').forEach((card, index) => {
+    gsap.fromTo(card,
+      { opacity: 0, y: 26 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        delay: index * 0.14,
+        ease: 'expo.out',
+        scrollTrigger: {
+          trigger: card,
+          start: 'top 88%',
+          once: true,
+        },
+      }
+    );
+  });
+}
+
+export function initFinalCtaReveal(): void {
+  gsap.fromTo('.cta-banner__box',
+    { opacity: 0, scale: 0.95 },
+    {
+      opacity: 1,
+      scale: 1,
+      duration: 0.9,
+      ease: 'expo.out',
+      scrollTrigger: {
+        trigger: '.cta-banner__box',
+        start: 'top 88%',
+        once: true,
+      },
+    }
+  );
+}
 
 /* ─────────────────────────────────────────
    Magnetic hover on buttons

@@ -18,6 +18,8 @@ import {
   initScrollAnimations,
   initParallax,
   initCounters,
+  initDocumentReveal,
+  initFinalCtaReveal,
   initMagneticButtons,
   initStickerWiggle,
   initNavHighlight,
@@ -113,6 +115,8 @@ initHeroAnimations();
 initScrollAnimations();
 initParallax();
 initCounters();
+initDocumentReveal();
+initFinalCtaReveal();
 initMagneticButtons();
 initStickerWiggle();
 initNavHighlight();
