@@ -10,25 +10,25 @@ export function renderBatch(container: HTMLElement): void {
 
   container.innerHTML = `
     <div class="batch-page-wrapper">
-      <!-- TopNavBar -->
-      <header class="batch-header">
-        <div class="batch-header__left">
-          <a href="/" class="batch-header__brand" data-route="/">
-            <span class="material-symbols-outlined batch-header__icon">verified_user</span>
+      <!-- TopNavBar — same structure as verify page -->
+      <header class="verify-header">
+        <div class="verify-header__left">
+          <a href="/" class="verify-header__brand" data-route="/">
+            <span class="material-symbols-outlined verify-header__icon">verified_user</span>
             SignVerify AI
           </a>
-          <nav class="batch-header__nav">
-            <a class="batch-header__link" href="/verify" data-route="/verify">Verify</a>
-            <a class="batch-header__link active" href="/batch" data-route="/batch">Batch Mode</a>
-            <a class="batch-header__link" href="/#stats" data-route="/">Dashboard</a>
+          <nav class="verify-header__nav">
+            <a class="verify-header__link" href="/verify" data-route="/verify">Verify</a>
+            <a class="verify-header__link active" href="/batch" data-route="/batch">Batch Mode</a>
+            <a class="verify-header__link" href="/#stats" data-route="/">Dashboard</a>
           </nav>
         </div>
-        <div class="batch-header__right">
-          <a href="/" class="batch-btn-home" data-route="/">
+        <div class="verify-header__right">
+          <a href="/" class="verify-btn-home" data-route="/">
             <span class="material-symbols-outlined text-base">arrow_back</span>
             Back Home
           </a>
-          <button class="batch-header__account" aria-label="Account">
+          <button class="verify-header__account" aria-label="Account">
             <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_circle</span>
           </button>
         </div>
@@ -36,37 +36,38 @@ export function renderBatch(container: HTMLElement): void {
 
       <!-- Main Layout -->
       <main class="batch-main-container">
-        <!-- Sidebar / Admin Panel -->
-        <aside class="batch-sidebar">
-          <div class="batch-sidebar__header">
-            <div class="batch-sidebar__badge">
-              <div class="batch-sidebar__title">Admin Panel</div>
-              <div class="batch-sidebar__node">Verification Node #01</div>
-            </div>
+        <!-- Sidebar — same structure as verify page -->
+        <aside class="verify-sidebar">
+          <div class="verify-sidebar__header">
+            <h2 class="verify-sidebar__title">
+              <span class="material-symbols-outlined">tune</span>
+              Admin Panel
+            </h2>
+            <p class="verify-sidebar__node">NODE // #01-ACTIVE</p>
           </div>
 
-          <nav class="batch-sidebar__nav">
-            <button class="batch-tab-btn" data-tab="overview">
+          <nav class="verify-sidebar__nav">
+            <button class="sidebar-tab-btn" data-tab="overview">
               <span class="material-symbols-outlined">dashboard</span>
               Overview
             </button>
-            <button class="batch-tab-btn active" data-tab="history">
+            <button class="sidebar-tab-btn active" data-tab="history">
               <span class="material-symbols-outlined">history</span>
               History
             </button>
-            <button class="batch-tab-btn" data-tab="settings">
+            <button class="sidebar-tab-btn" data-tab="settings">
               <span class="material-symbols-outlined">settings</span>
               Settings
             </button>
-            <button class="batch-tab-btn" data-tab="export">
+            <button class="sidebar-tab-btn" data-tab="export">
               <span class="material-symbols-outlined">ios_share</span>
               Export
             </button>
           </nav>
 
-          <button id="btn-batch-new" class="batch-btn-new">
+          <button id="btn-batch-new" class="verify-btn-new">
             <span class="material-symbols-outlined">add</span>
-            New Analysis
+            New Batch
           </button>
         </aside>
 
@@ -256,7 +257,7 @@ export function renderBatch(container: HTMLElement): void {
       </main>
 
       <!-- Footer -->
-      <footer class="footer batch-footer">
+      <footer class="footer verify-footer">
         <div class="footer__copy">© 2024 SIGNVERIFY AI — ALL RIGHTS RESERVED</div>
         <div class="footer__links">
           <a href="/" class="footer__link" data-route="/">Home</a>

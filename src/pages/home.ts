@@ -54,8 +54,8 @@ export function renderHome(container: HTMLElement): void {
     <nav class="topnav" id="topnav">
       <div class="topnav__brand" id="nav-brand" style="cursor: pointer;">SignVerify AI</div>
       <div class="topnav__links">
-        <a href="/verify" class="topnav__link" data-route="/verify">Verify</a>
-        <a href="/batch" class="topnav__link" data-route="/batch">Batch Mode</a>
+        <a href="#hero" class="topnav__link">Verify</a>
+        <a href="#batch-mode" class="topnav__link">Batch Mode</a>
         <a href="#how-it-works" class="topnav__link">How It Works</a>
         <a href="#features" class="topnav__link">Features</a>
         <a href="#stats" class="topnav__link">Dashboard</a>

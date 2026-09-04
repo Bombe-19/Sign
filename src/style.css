@@ -2299,11 +2299,10 @@ html.lenis body {
 .workspace-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-end;
+  align-items: center;
   border-bottom: 4px solid var(--c-black);
   padding-bottom: 1.25rem;
-  gap: 1rem;
-  flex-wrap: wrap;
+  gap: 1.5rem;
 }
 
 .workspace-badge {
@@ -2313,7 +2312,6 @@ html.lenis body {
   background: var(--c-yellow);
   border: 2px solid var(--c-black);
   box-shadow: 4px 4px 0 0 #000;
-  transform: rotate(1deg);
   padding: 0.35rem 0.85rem;
   margin-bottom: 0.5rem;
 }
@@ -2335,6 +2333,7 @@ html.lenis body {
 
 .mode-toggle-group {
   display: flex;
+  flex-shrink: 0;
   background: #e5e2d9;
   border: 4px solid var(--c-black);
   padding: 0.25rem;
@@ -3008,10 +3007,16 @@ html.lenis body {
 }
 
 .batch-main-container {
+  padding-top: 100px;
+  padding-bottom: 3rem;
+  padding-left: 3rem;
+  padding-right: 3rem;
   display: flex;
-  min-height: calc(100vh - 72px);
-  padding-top: 72px;
-  position: relative;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1360px;
+  margin: 0 auto;
+  flex: 1;
 }
 
 .batch-sidebar {
@@ -3126,13 +3131,13 @@ html.lenis body {
 
 .batch-canvas {
   flex: 1;
-  margin-left: 260px;
-  padding: 2.5rem 3rem;
+  padding: 0;
   background: #f7f4e9;
-  min-height: calc(100vh - 72px - 60px);
+  min-height: calc(100vh - 140px);
   display: flex;
   flex-direction: column;
   gap: 2.5rem;
+  min-width: 0;
 }
 
 .batch-canvas__header {
@@ -3516,11 +3521,10 @@ html.lenis body {
   to { transform: rotate(360deg); }
 }
 
-.batch-footer {
-  margin-left: 260px;
+.verify-footer {
   border-top: 4px solid var(--c-black);
-  z-index: 50;
   position: relative;
+  z-index: 50;
 }
 
 /* Utility classes for batch page */
@@ -3548,14 +3552,13 @@ html.lenis body {
 .opacity-60 { opacity: 0.6; }
 
 @media (max-width: 1024px) {
-  .batch-sidebar {
+  .verify-sidebar {
     display: none;
   }
   .batch-canvas {
-    margin-left: 0;
     padding: 1.5rem;
   }
-  .batch-footer {
+  .verify-footer {
     margin-left: 0;
   }
   .entities-grid {
