@@ -1,0 +1,548 @@
+/**
+ * home.ts
+ * Landing page component for SignVerify AI.
+ */
+
+import Lenis from 'lenis';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import {
+  setInitialStates,
+  initHeroAnimations,
+  initScrollAnimations,
+  initParallax,
+  initCounters,
+  initDocumentReveal,
+  initFinalCtaReveal,
+  initMagneticButtons,
+  initStickerWiggle,
+  initNavHighlight,
+} from '../animations';
+import { navigateTo } from '../router';
+
+gsap.registerPlugin(ScrollTrigger);
+
+let lenisInstance: Lenis | null = null;
+
+export function renderHome(container: HTMLElement): void {
+  // Clean up any existing ScrollTriggers & Lenis
+  if (lenisInstance) {
+    lenisInstance.destroy();
+    lenisInstance = null;
+  }
+  ScrollTrigger.getAll().forEach((st) => st.kill());
+
+  container.innerHTML = `
+    <!-- ─── Background Layers ─── -->
+    <div class="bg-layers" aria-hidden="true">
+      <div class="bg-grid"></div>
+      <div class="bg-circle-yellow"></div>
+      <div class="bg-square-pink"></div>
+      <svg class="bg-star" viewBox="0 0 100 100" fill="currentColor" stroke="black" stroke-width="4">
+        <polygon points="50,5 61,35 95,35 68,55 78,85 50,65 22,85 32,55 5,35 39,35" />
+      </svg>
+      <svg class="bg-squiggle-top" viewBox="0 0 200 200" fill="none" stroke="black" stroke-linecap="round" stroke-width="6">
+        <path d="M20,100 Q40,40 80,90 T140,80 T180,120" />
+      </svg>
+      <svg class="bg-squiggle-bottom" viewBox="0 0 200 200" fill="none" stroke="black" stroke-linecap="round" stroke-width="6">
+        <path d="M10,150 Q50,50 100,150 T190,50" />
+      </svg>
+      <div class="bg-halftone"></div>
+    </div>
+
+    <!-- ─── Nav ─── -->
+    <nav class="topnav" id="topnav">
+      <div class="topnav__brand" id="nav-brand" style="cursor: pointer;">SignVerify AI</div>
+      <div class="topnav__links">
+        <a href="/verify" class="topnav__link" data-route="/verify">Verify</a>
+        <a href="/batch" class="topnav__link" data-route="/batch">Batch Mode</a>
+        <a href="#how-it-works" class="topnav__link">How It Works</a>
+        <a href="#features" class="topnav__link">Features</a>
+        <a href="#stats" class="topnav__link">Dashboard</a>
+      </div>
+      <button class="topnav__account" aria-label="Account">
+        <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">account_circle</span>
+      </button>
+    </nav>
+
+    <!-- ─── HERO ─── -->
+    <section class="hero" id="hero">
+      <div class="hero__left">
+        <!-- Headline card -->
+        <div class="hero__headline-wrap">
+          <span class="sticker sticker--pink sticker--tl">CNN-BASED</span>
+          <span class="sticker sticker--yellow sticker--br">L1 DISTANCE MATCHING</span>
+          <div class="hero__card hero__card--headline">
+            <h1 class="hero__h1">
+              IS THAT<br />SIGNATURE<br />
+              <span class="hero__h1-highlight">REAL?</span>
+            </h1>
+          </div>
+        </div>
+
+        <!-- Sub-description -->
+        <div class="hero__desc-wrap">
+          <span class="sticker sticker--blue sticker--tr">INSTANT SCORING</span>
+          <p class="hero__desc">
+            AI-powered signature verification using deep learning. Upload two
+            signatures — get an instant, confidence-scored verdict.
+          </p>
+        </div>
+
+        <!-- CTA -->
+        <div class="hero__cta">
+          <a href="/verify" class="btn btn--primary" id="cta-verify" data-route="/verify">VERIFY A SIGNATURE</a>
+          <a href="#how-it-works" class="btn btn--secondary">
+            SEE HOW IT WORKS
+            <span class="material-symbols-outlined">arrow_downward</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Right visual -->
+      <div class="hero__right">
+        <div class="verify-card">
+          <!-- Reference Sig -->
+          <div class="sig-card sig-card--ref" id="sig-ref">
+            <div class="sig-card__label">REFERENCE</div>
+            <span class="sig-card__check material-symbols-outlined" style="font-variation-settings:'FILL' 1,'wght' 700">check_circle</span>
+            <div class="sig-card__body">
+              <img src="/sig1.png" alt="Reference signature" class="sig-img" />
+              <span class="sig-card__sub">ORIGINAL</span>
+            </div>
+          </div>
+
+          <!-- Arrow -->
+          <div class="verify-card__arrow" aria-hidden="true">→</div>
+
+          <!-- Uploaded Sig -->
+          <div class="sig-card sig-card--upload" id="sig-upload">
+            <div class="sig-card__label">UPLOADED</div>
+            <div class="sig-card__body sig-card__body--scan">
+              <div class="scan-line" aria-hidden="true"></div>
+              <img src="/sig2.png" alt="Uploaded signature" class="sig-img" />
+              <span class="sig-card__sub">SCAN</span>
+            </div>
+          </div>
+
+          <!-- Result badge -->
+          <div class="result-badge result-badge--forged" id="result-badge">
+            <div class="result-badge__row">
+              <span class="material-symbols-outlined result-badge__icon result-badge__icon--forged" style="font-variation-settings:'FILL' 1">gpp_bad</span>
+              <span class="result-badge__verdict result-badge__verdict--forged">FORGED</span>
+            </div>
+            <div class="result-badge__score">SIMILARITY: 31%</div>
+          </div>
+
+          <div class="verify-card__tag">AI VERIFICATION IN ACTION</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── HOW IT WORKS ─── -->
+    <section class="section how-it-works" id="how-it-works">
+      <div class="section__inner">
+        <div class="hiw-header" data-gsap="fade-up">
+          <div class="hiw-halftone" aria-hidden="true"></div>
+          <svg class="hiw-squiggle" viewBox="0 0 300 120" fill="none" stroke="#757570" stroke-linecap="round" stroke-width="8" aria-hidden="true">
+            <path d="M20,90 Q90,10 160,80 T280,30" />
+          </svg>
+          <span class="hiw-badge">THE PROCESS</span>
+          <h2 class="hiw-title">
+            THREE STEPS TO THE <span class="hiw-title__highlight">TRUTH</span>
+          </h2>
+        </div>
+
+        <div class="hiw-steps-wrap">
+          <div class="step-card step-card--1" data-gsap="fade-up" data-gsap-delay="0.0">
+            <div class="step-card__num step-card__num--yellow">01</div>
+            <h3 class="step-card__title">UPLOAD</h3>
+            <p class="step-card__desc">Drop in a reference signature and one to verify</p>
+          </div>
+
+          <div class="hiw-arrow hiw-arrow--1" data-gsap="fade-up" data-gsap-delay="0.1" aria-hidden="true">
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </div>
+
+          <div class="step-card step-card--2" data-gsap="fade-up" data-gsap-delay="0.15">
+            <div class="step-card__num step-card__num--pink">02</div>
+            <h3 class="step-card__title">AI COMPARES</h3>
+            <p class="step-card__desc">CNN extracts features, measures distance between embeddings</p>
+          </div>
+
+          <div class="hiw-arrow hiw-arrow--2" data-gsap="fade-up" data-gsap-delay="0.25" aria-hidden="true">
+            <span class="material-symbols-outlined">arrow_forward</span>
+          </div>
+
+          <div class="step-card step-card--3" data-gsap="fade-up" data-gsap-delay="0.3">
+            <div class="step-card__num step-card__num--green">03</div>
+            <h3 class="step-card__title">GET VERDICT</h3>
+            <p class="step-card__desc">Instant genuine/forged result with a confidence score</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── BATCH MODE ─── -->
+    <section class="section batch-mode" id="batch-mode">
+      <div class="section__inner">
+        <div class="batch-header" data-gsap="fade-up">
+          <svg class="batch-arc-dec" viewBox="0 0 100 80" fill="none" stroke="#888" stroke-linecap="round" stroke-width="5" aria-hidden="true">
+            <path d="M10,20 Q50,70 90,20" />
+          </svg>
+          <svg class="batch-star-dec" viewBox="0 0 100 100" fill="#3D5AFE" stroke="#1C1C16" stroke-width="4" aria-hidden="true">
+            <polygon points="50,5 61,35 95,35 68,55 78,85 50,65 22,85 32,55 5,35 39,35" />
+          </svg>
+          <div class="batch-dashed-circle" aria-hidden="true"></div>
+
+          <span class="batch-badge">BATCH MODE</span>
+          <h2 class="batch-title">
+            GOT A FULL DOCUMENT?<br />
+            WE’LL <span class="batch-title__highlight">FIND</span> THE SIGNATURES.
+          </h2>
+          <p class="batch-desc">
+            Upload a scanned contract, form, or agreement — SignVerify AI
+            automatically detects and extracts every signature on the page, then
+            runs verification on each one.
+          </p>
+        </div>
+
+        <div class="batch-visual" data-gsap="fade-up" data-gsap-delay="0.15">
+          <svg class="batch-ribbon-bg" viewBox="0 0 800 300" fill="none" stroke="#8c8a81" stroke-width="14" stroke-linecap="round" aria-hidden="true">
+            <path d="M-50,260 C80,260 120,320 120,220 C120,120 320,100 400,160 C480,220 460,320 470,180" />
+          </svg>
+
+          <!-- Left: Full Document Card -->
+          <div class="doc-card">
+            <span class="doc-card__tag">FULL DOCUMENT</span>
+            <div class="doc-body">
+              <div class="doc-header">
+                <div class="doc-title-row">
+                  <span class="material-symbols-outlined doc-icon">description</span>
+                  <div class="doc-title-text">
+                    <span class="doc-main-title">SERVICE AGREEMENT</span>
+                    <span class="doc-sub-info">REF: #CON-2024-8849</span>
+                  </div>
+                </div>
+                <div class="doc-stamp">OFFICIAL</div>
+              </div>
+
+              <p class="doc-text-paragraph">
+                This Agreement is entered into by the undersigned parties. Both parties
+                agree to the terms, conditions, and obligations outlined herein.
+              </p>
+
+              <div class="sig-detect-box sig-detect-box--1">
+                <span class="sig-detect-label">PARTY A SIGNATURE</span>
+                <div class="sig-img-wrapper">
+                  <img src="/sig1.png" alt="Party A signature" class="sig-img-doc" />
+                </div>
+                <div class="sig-meta-row">
+                  <span>Signer: T. Angelique</span>
+                  <span>Date: 10/14/24</span>
+                </div>
+              </div>
+
+              <p class="doc-text-paragraph doc-text-paragraph--sm">
+                In witness whereof, the parties have executed this Agreement on the date written below.
+              </p>
+
+              <div class="sig-detect-box sig-detect-box--2">
+                <span class="sig-detect-label">PARTY B SIGNATURE</span>
+                <div class="sig-img-wrapper">
+                  <img src="/sig2.png" alt="Party B signature" class="sig-img-doc" />
+                </div>
+                <div class="sig-meta-row">
+                  <span>Signer: I. ShowerCurtain</span>
+                  <span>Date: 10/14/24</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Center Flow -->
+          <div class="batch-center-flow">
+            <div class="auto-detect-badge">
+              <span class="material-symbols-outlined">bolt</span>
+              <span>AUTO-DETECT</span>
+            </div>
+            <div class="batch-flow-arrow">→</div>
+          </div>
+
+          <!-- Right Extracted Stack -->
+          <div class="extracted-stack">
+            <span class="extracted-stack__tag">EXTRACTED &amp; VERIFIED</span>
+
+            <div class="extracted-card extracted-card--1">
+              <div class="extracted-card__head">
+                <span>SIG 1</span>
+                <span class="dot dot--green"></span>
+              </div>
+              <div class="extracted-card__body">
+                <img src="/sig1.png" alt="Extracted signature 1" class="sig-img-extracted" />
+              </div>
+            </div>
+
+            <div class="extracted-card extracted-card--2">
+              <div class="extracted-card__head">
+                <span>SIG 2</span>
+                <span class="dot dot--pink"></span>
+              </div>
+              <div class="extracted-card__body">
+                <img src="/sig2.png" alt="Extracted signature 2" class="sig-img-extracted" />
+              </div>
+            </div>
+
+            <div class="extracted-card extracted-card--3">
+              <div class="extracted-card__head">
+                <span>SIG 3</span>
+                <span class="dot dot--green"></span>
+              </div>
+              <div class="extracted-card__body">
+                <img src="/sig5.png" alt="Extracted signature 3" class="sig-img-extracted" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="batch-footer-action" data-gsap="fade-up" data-gsap-delay="0.3">
+          <div class="batch-tags-row">
+            <span class="batch-tag batch-tag--blue">AUTO-DETECTION</span>
+            <span class="batch-tag batch-tag--pink">MULTI-SIGNATURE SUPPORT</span>
+            <span class="batch-tag batch-tag--yellow">ONE-CLICK BATCH VERIFY</span>
+          </div>
+
+          <a href="/batch" class="btn btn--secondary btn--batch-cta" data-route="/batch">
+            TRY BATCH MODE →
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── FEATURES ─── -->
+    <section class="section features" id="features">
+      <div class="section__inner">
+        <div class="section__header" data-gsap="fade-up">
+          <span class="label-tag label-tag--pink">CAPABILITIES</span>
+          <h2 class="section__title">Built for Precision</h2>
+        </div>
+
+        <div class="features-grid">
+          <div class="feature-card feature-card--yellow" data-gsap="scale-up" data-gsap-delay="0.0">
+            <span class="material-symbols-outlined feature-card__icon">speed</span>
+            <h3 class="feature-card__title">Sub-Second Speed</h3>
+            <p class="feature-card__desc">Results delivered in &lt;800ms via optimised GPU inference pipeline.</p>
+          </div>
+          <div class="feature-card feature-card--blue" data-gsap="scale-up" data-gsap-delay="0.1">
+            <span class="material-symbols-outlined feature-card__icon">batch_prediction</span>
+            <h3 class="feature-card__title">Batch Mode</h3>
+            <p class="feature-card__desc">Verify hundreds of signatures at once with our async batch API.</p>
+          </div>
+          <div class="feature-card feature-card--pink" data-gsap="scale-up" data-gsap-delay="0.2">
+            <span class="material-symbols-outlined feature-card__icon">api</span>
+            <h3 class="feature-card__title">REST API</h3>
+            <p class="feature-card__desc">Integrate seamlessly into any workflow with our developer-friendly API.</p>
+          </div>
+          <div class="feature-card feature-card--green" data-gsap="scale-up" data-gsap-delay="0.3">
+            <span class="material-symbols-outlined feature-card__icon">security</span>
+            <h3 class="feature-card__title">Bank-Grade Security</h3>
+            <p class="feature-card__desc">End-to-end encryption and zero data retention — your signatures stay private.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── THE NUMBERS ─── -->
+    <section class="section numbers-section" id="stats">
+      <div class="section__inner">
+        <div class="numbers-header" data-gsap="fade-up">
+          <span class="numbers-badge">THE NUMBERS</span>
+          <h2 class="numbers-title">
+            ACCURACY YOU CAN <span class="numbers-title__highlight">TRUST</span>
+          </h2>
+        </div>
+
+        <div class="numbers-grid">
+          <div class="num-card num-card--yellow" data-gsap="fade-up" data-gsap-delay="0.0">
+            <div class="num-card__val" data-count="94.2">94.2%</div>
+            <div class="num-card__label">TEST ACCURACY</div>
+          </div>
+          <div class="num-card num-card--pink" data-gsap="fade-up" data-gsap-delay="0.1">
+            <div class="num-card__val" data-count="0.97">0.97</div>
+            <div class="num-card__label">ROC-AUC SCORE</div>
+          </div>
+          <div class="num-card num-card--blue" data-gsap="fade-up" data-gsap-delay="0.2">
+            <div class="num-card__val">256×128</div>
+            <div class="num-card__label">INPUT RESOLUTION</div>
+          </div>
+          <div class="num-card num-card--green" data-gsap="fade-up" data-gsap-delay="0.3">
+            <div class="num-card__val">&lt;1s</div>
+            <div class="num-card__label">VERIFICATION TIME</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── USE CASES ─── -->
+    <section class="section use-cases" id="use-cases">
+      <div class="section__inner">
+        <div class="uc-header" data-gsap="fade-up">
+          <div class="uc-diamond-dec" aria-hidden="true"></div>
+          <span class="uc-badge">USE CASES</span>
+          <h2 class="uc-title">
+            BUILT FOR <span class="uc-title__highlight">EVERYONE</span> WHO SIGNS
+          </h2>
+        </div>
+
+        <div class="uc-cards-stack">
+          <div class="uc-card uc-card--1" data-gsap="fade-up" data-gsap-delay="0.0">
+            <span class="uc-sticker uc-sticker--tr">TRUSTED</span>
+            <div class="uc-card__icon-circle uc-card__icon-circle--blue">
+              <span class="material-symbols-outlined">account_balance</span>
+            </div>
+            <div class="uc-card__content">
+              <h3 class="uc-card__title">BANKS &amp; FINANCE</h3>
+              <p class="uc-card__desc">Verify signatures on checks, loans, contracts</p>
+            </div>
+          </div>
+
+          <div class="uc-card uc-card--2" data-gsap="fade-up" data-gsap-delay="0.15">
+            <span class="uc-sticker uc-sticker--tl">SECURE</span>
+            <div class="uc-card__icon-circle uc-card__icon-circle--pink">
+              <span class="material-symbols-outlined">balance</span>
+            </div>
+            <div class="uc-card__content">
+              <h3 class="uc-card__title">LEGAL TEAMS</h3>
+              <p class="uc-card__desc">Cross-check affidavits and legal filings</p>
+            </div>
+          </div>
+
+          <div class="uc-card uc-card--3" data-gsap="fade-up" data-gsap-delay="0.3">
+            <span class="uc-sticker uc-sticker--br">FAST</span>
+            <div class="uc-card__icon-circle uc-card__icon-circle--green">
+              <span class="material-symbols-outlined">draw</span>
+            </div>
+            <div class="uc-card__content">
+              <h3 class="uc-card__title">PERSONAL USE</h3>
+              <p class="uc-card__desc">Confirm authenticity before you sign anything</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── CTA BANNER ─── -->
+    <section class="section cta-banner" id="cta-section">
+      <div class="section__inner">
+        <div class="cta-top-line-dec" aria-hidden="true"></div>
+
+        <div class="cta-banner__box" data-gsap="fade-up">
+          <svg class="cta-squiggle-dec" viewBox="0 0 50 60" fill="none" stroke="#1C1C16" stroke-width="4.5" stroke-linecap="round" aria-hidden="true">
+            <path d="M 15,10 C 35,5 5,30 25,25 S 35,55 15,50" />
+          </svg>
+          <div class="cta-blue-diamond-dec" aria-hidden="true"></div>
+
+          <h2 class="cta-banner__title">
+            READY TO <span class="cta-banner__title-highlight">VERIFY</span>?
+          </h2>
+
+          <div class="cta-banner__actions">
+            <div class="cta-btn-wrap">
+              <span class="cta-tryit-sticker">TRY IT</span>
+              <a href="/verify" class="btn btn--primary cta-main-btn" data-route="/verify">
+                START VERIFYING NOW →
+              </a>
+            </div>
+          </div>
+
+          <div class="cta-exclamation-badge" aria-hidden="true">!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── Footer ─── -->
+    <footer class="footer">
+      <div class="footer__copy">© 2024 SIGNVERIFY AI — ALL RIGHTS RESERVED</div>
+      <div class="footer__links">
+        <a href="#" class="footer__link">Status</a>
+        <a href="#" class="footer__link">API Docs</a>
+        <a href="#" class="footer__link">Privacy</a>
+        <a href="#" class="footer__link">Terms</a>
+      </div>
+    </footer>
+  `;
+
+  // Attach brand click
+  const navBrand = container.querySelector('#nav-brand');
+  navBrand?.addEventListener('click', () => navigateTo('/'));
+
+  // Init GSAP & Lenis
+  window.history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
+  setInitialStates();
+
+  lenisInstance = new Lenis({
+    duration: 1.2,
+    easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+    smoothWheel: true,
+    touchMultiplier: 2,
+  });
+
+  const onRaf = (time: number) => lenisInstance?.raf(time * 1000);
+  gsap.ticker.add(onRaf);
+  gsap.ticker.lagSmoothing(0);
+
+  ScrollTrigger.scrollerProxy(document.body, {
+    scrollTop(value?: number) {
+      if (typeof value === 'number' && lenisInstance) {
+        lenisInstance.scrollTo(value, { immediate: true });
+      }
+      return lenisInstance ? lenisInstance.scroll : window.scrollY;
+    },
+    getBoundingClientRect() {
+      return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
+    },
+    pinType: 'transform',
+  });
+
+  lenisInstance.on('scroll', ScrollTrigger.update);
+  ScrollTrigger.refresh();
+
+  // Anchor links smooth scroll
+  container.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      const id = anchor.getAttribute('href')!.slice(1);
+      const target = document.getElementById(id);
+      if (target && lenisInstance) {
+        lenisInstance.scrollTo(target, { offset: -80, duration: 1.6 });
+      }
+    });
+  });
+
+  // Run all page animations
+  initHeroAnimations();
+  initScrollAnimations();
+  initParallax();
+  initCounters();
+  initDocumentReveal();
+  initFinalCtaReveal();
+  initMagneticButtons();
+  initStickerWiggle();
+  initNavHighlight();
+
+  // 3D tilt on verify card
+  const verifyCard = container.querySelector<HTMLElement>('.verify-card');
+  if (verifyCard) {
+    verifyCard.addEventListener('mousemove', (e: MouseEvent) => {
+      const r = verifyCard.getBoundingClientRect();
+      const rx = ((e.clientY - r.top - r.height / 2) / r.height) * -10;
+      const ry = ((e.clientX - r.left - r.width / 2) / r.width) * 10;
+      gsap.to(verifyCard, { rotateX: rx, rotateY: ry, transformPerspective: 800, duration: 0.4, ease: 'power2.out' });
+    });
+    verifyCard.addEventListener('mouseleave', () => {
+      gsap.to(verifyCard, { rotateX: 0, rotateY: 0, duration: 0.6, ease: 'elastic.out(1, 0.5)' });
+    });
+  }
+}
