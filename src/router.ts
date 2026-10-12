@@ -1,26 +1,31 @@
 /**
  * router.ts
- * Lightweight client-side router for SignVerify AI SPA.
+ * Lightweight client-side router for SureSign SPA.
  */
 
 import { renderHome } from './pages/home';
 import { renderVerify } from './pages/verify';
 import { renderBatch } from './pages/batch';
+import { renderDashboard } from './pages/dashboard';
 
 type RouteHandler = (container: HTMLElement) => { title: string; render: () => void };
 
 const routes: Record<string, RouteHandler> = {
   '/': (container) => ({
-    title: 'SignVerify AI — Is That Signature Real?',
+    title: 'SureSign — Is That Signature Real?',
     render: () => renderHome(container),
   }),
   '/verify': (container) => ({
-    title: 'Upload & Compare — SignVerify AI',
+    title: 'Upload & Compare — SureSign',
     render: () => renderVerify(container),
   }),
   '/batch': (container) => ({
-    title: 'Batch Document Extraction — SignVerify AI',
+    title: 'Batch Document Extraction — SureSign',
     render: () => renderBatch(container),
+  }),
+  '/dashboard': (container) => ({
+    title: 'Model Insights & Telemetry Dashboard — SureSign',
+    render: () => renderDashboard(container),
   }),
 };
 
@@ -48,6 +53,7 @@ export function initRouter(container: HTMLElement): void {
       (href.startsWith('/verify') ||
         href.startsWith('/upload.html') ||
         href.startsWith('/batch') ||
+        href.startsWith('/dashboard') ||
         href === '/')
     ) {
       e.preventDefault();
@@ -97,6 +103,8 @@ function handleRoute(): void {
     matchedHandler = routes['/verify'];
   } else if (pathname === '/batch' || pathname === '/batch.html' || hash === '#/batch' || hash === '#batch') {
     matchedHandler = routes['/batch'];
+  } else if (pathname === '/dashboard' || pathname === '/stats' || hash === '#/dashboard' || hash === '#dashboard' || hash === '#stats') {
+    matchedHandler = routes['/dashboard'];
   }
 
   const { title, render } = matchedHandler(appContainer);

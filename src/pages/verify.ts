@@ -15,7 +15,7 @@ export function renderVerify(container: HTMLElement): void {
         <div class="verify-header__left">
           <a href="/" class="verify-header__brand" data-route="/">
             <span class="material-symbols-outlined verify-header__icon">verified_user</span>
-            SignVerify AI
+            SureSign
           </a>
           <nav class="verify-header__nav">
             <a class="verify-header__link active" href="/verify" data-route="/verify">Verify</a>
@@ -263,7 +263,7 @@ export function renderVerify(container: HTMLElement): void {
 
       <!-- Footer -->
       <footer class="footer">
-        <div class="footer__copy">© 2024 SIGNVERIFY AI — ALL RIGHTS RESERVED</div>
+        <div class="footer__copy">© 2024 SURESIGN — ALL RIGHTS RESERVED</div>
         <div class="footer__links">
           <a href="/" class="footer__link" data-route="/">Home</a>
           <a href="/#features" class="footer__link" data-route="/">Features</a>

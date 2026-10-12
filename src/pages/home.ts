@@ -1,6 +1,6 @@
 /**
  * home.ts
- * Landing page component for SignVerify AI.
+ * Landing page component for SureSign.
  */
 
 import Lenis from 'lenis';
@@ -52,13 +52,13 @@ export function renderHome(container: HTMLElement): void {
 
     <!-- ─── Nav ─── -->
     <nav class="topnav" id="topnav">
-      <div class="topnav__brand" id="nav-brand" style="cursor: pointer;">SignVerify AI</div>
+      <div class="topnav__brand" id="nav-brand" style="cursor: pointer;">SureSign</div>
       <div class="topnav__links">
         <a href="#hero" class="topnav__link">Verify</a>
         <a href="#batch-mode" class="topnav__link">Batch Mode</a>
         <a href="#how-it-works" class="topnav__link">How It Works</a>
         <a href="#features" class="topnav__link">Features</a>
-        <a href="#stats" class="topnav__link">Dashboard</a>
+        <a href="/dashboard" data-route="/dashboard" class="topnav__link">Dashboard</a>
       </div>
       <button class="topnav__account" aria-label="Account">
         <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">account_circle</span>
@@ -201,7 +201,7 @@ export function renderHome(container: HTMLElement): void {
             WE’LL <span class="batch-title__highlight">FIND</span> THE SIGNATURES.
           </h2>
           <p class="batch-desc">
-            Upload a scanned contract, form, or agreement — SignVerify AI
+            Upload a scanned contract, form, or agreement — SureSign
             automatically detects and extracts every signature on the page, then
             runs verification on each one.
           </p>
@@ -462,7 +462,7 @@ export function renderHome(container: HTMLElement): void {
 
     <!-- ─── Footer ─── -->
     <footer class="footer">
-      <div class="footer__copy">© 2024 SIGNVERIFY AI — ALL RIGHTS RESERVED</div>
+      <div class="footer__copy">© 2024 SURESIGN — ALL RIGHTS RESERVED</div>
       <div class="footer__links">
         <a href="#" class="footer__link">Status</a>
         <a href="#" class="footer__link">API Docs</a>
