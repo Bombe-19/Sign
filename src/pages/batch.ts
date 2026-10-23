@@ -280,6 +280,8 @@ function attachBatchInteractions(container: HTMLElement): void {
   const btnCompareSelected = container.querySelector<HTMLButtonElement>('#btn-compare-selected')!;
   const btnNew = container.querySelector<HTMLButtonElement>('#btn-batch-new')!;
 
+  const entitiesGrid = container.querySelector<HTMLElement>('.entities-grid')!;
+
   // Click dropzone to trigger input
   dropzone.addEventListener('click', () => fileInput.click());
 
@@ -300,29 +302,87 @@ function attachBatchInteractions(container: HTMLElement): void {
     e.preventDefault();
     const files = e.dataTransfer?.files;
     if (files && files.length > 0) {
-      triggerScanAnimation();
+      processDocument(files[0]);
     }
   });
 
   fileInput.addEventListener('change', () => {
     if (fileInput.files?.length) {
-      triggerScanAnimation();
+      processDocument(fileInput.files[0]);
     }
   });
 
-  function triggerScanAnimation() {
-    countBadge.textContent = 'SCANNING...';
+  async function processDocument(file: File) {
+    countBadge.textContent = 'EXTRACTING VIA OPENCV...';
     countBadge.style.backgroundColor = '#FF3D68';
     countBadge.style.color = '#fff';
 
-    setTimeout(() => {
-      updateCount();
+    try {
+      const fd = new FormData();
+      fd.append('document_file', file);
+
+      const resp = await fetch('/api/extract', {
+        method: 'POST',
+        body: fd
+      });
+
+      if (!resp.ok) {
+        throw new Error(`Extraction HTTP ${resp.status}`);
+      }
+
+      const json = await resp.json();
+
+      if (json.signatures && json.signatures.length > 0) {
+        countBadge.textContent = `${json.signatures.length} FOUND (${json.freehand_count} FREEHAND, ${json.boxed_count} BOXED)`;
+        entitiesGrid.innerHTML = json.signatures.map((sig: any, index: number) => `
+          <div class="entity-card" data-id="${sig.id}">
+            <div class="entity-card__header ${sig.type === 'boxed' ? 'entity-card__header--pink' : ''}">
+              <span class="entity-card__name font-mono">${sig.type.toUpperCase()} #${index + 1}</span>
+              <input type="checkbox" class="brutal-checkbox" checked id="check-${sig.id}" data-b64="${sig.image_base64}" />
+            </div>
+            <div class="entity-card__preview">
+              <img src="${sig.image_base64}" alt="${sig.id}" class="entity-sig-img" />
+            </div>
+            <div class="entity-card__footer">
+              <span class="font-mono text-xs">DIM: ${sig.bbox.width}x${sig.bbox.height}px</span>
+              <span class="material-symbols-outlined text-yellow text-sm">verified</span>
+            </div>
+          </div>
+        `).join('');
+
+        // Reattach listeners
+        reattachCheckboxes();
+      } else {
+        countBadge.textContent = '0 SIGNATURES DETECTED';
+        entitiesGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 2.5rem; background: #fff; border: 2px dashed #000; text-align: center;">
+            <span class="material-symbols-outlined" style="font-size: 3rem; color: #dc2626;">search_off</span>
+            <p style="font-family: var(--ff-mono); font-size: 1.1rem; font-weight: 700; margin-top: 0.5rem;">NO SIGNATURES IDENTIFIED IN THIS REGION</p>
+            <p style="font-size: 0.85rem; color: #666; margin-top: 0.25rem;">Try uploading a clearer scan or full page document.</p>
+          </div>
+        `;
+      }
+    } catch (err) {
+      console.warn('Document extraction fallback:', err);
+      countBadge.textContent = '4 FOUND // SIMULATED';
+    } finally {
       countBadge.style.backgroundColor = '#FFE234';
       countBadge.style.color = '#1c1c16';
-    }, 800);
+    }
   }
 
-  // Update selected count
+  function reattachCheckboxes() {
+    const activeCheckboxes = container.querySelectorAll<HTMLInputElement>('.brutal-checkbox');
+    activeCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        let checked = 0;
+        activeCheckboxes.forEach(c => { if (c.checked) checked++; });
+        countBadge.textContent = `${checked} SELECTED / ${activeCheckboxes.length} TOTAL`;
+      });
+    });
+  }
+
+  // Update selected count initially
   function updateCount() {
     let checkedCount = 0;
     checkboxes.forEach((cb) => {
@@ -335,23 +395,26 @@ function attachBatchInteractions(container: HTMLElement): void {
     cb.addEventListener('change', updateCount);
   });
 
-  // Action button - takes selected to verify page
+  // Action button - takes selected signature to verify page
   btnCompareSelected.addEventListener('click', () => {
     btnCompareSelected.innerHTML = `
       <span class="material-symbols-outlined spin-icon">progress_activity</span>
       <span>LOADING TO VERIFY...</span>
     `;
+
+    const checked = container.querySelector<HTMLInputElement>('.brutal-checkbox:checked');
+    if (checked && checked.dataset.b64) {
+      sessionStorage.setItem('suresign_target_preview', checked.dataset.b64);
+    }
+
     setTimeout(() => {
       navigateTo('/verify');
-    }, 400);
+    }, 350);
   });
 
   // New Analysis button resets selection
   btnNew.addEventListener('click', () => {
-    checkboxes.forEach((cb, idx) => {
-      cb.checked = idx !== 2;
-    });
-    updateCount();
+    fileInput.value = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 

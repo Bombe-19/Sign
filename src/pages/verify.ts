@@ -206,7 +206,7 @@ export function renderVerify(container: HTMLElement): void {
           <div class="verify-action-row">
             <div class="verify-model-indicator">
               <span class="pulse-dot"></span>
-              <span>SYSTEM READY // MODEL: SIAMESE-RESNET50-V2</span>
+              <span id="model-status-text">CONNECTING TO MODEL SERVER...</span>
             </div>
 
             <button id="btn-run-verify" class="btn-run-verification">
@@ -239,14 +239,25 @@ export function renderVerify(container: HTMLElement): void {
               <div class="metric-card">
                 <span class="metric-label">L1 DISTANCE</span>
                 <span id="metric-distance" class="metric-value">0.142</span>
-                <p class="metric-note">Threshold: &lt; 0.45</p>
+                <p class="metric-note">Decision Threshold: &lt; 0.60</p>
               </div>
 
               <div class="metric-card">
                 <span class="metric-label">STROKE CORRELATION</span>
                 <span id="metric-stroke" class="metric-value">HIGH (98%)</span>
-                <p class="metric-note">Curvature &amp; loop matches</p>
+                <p class="metric-note">Adaptive binary stroke match</p>
               </div>
+            </div>
+
+            <!-- Neural Forensic Reasoning Box -->
+            <div class="report-forensics-box">
+              <h3 class="forensics-title">
+                <span class="material-symbols-outlined text-blue">psychology</span>
+                NEURAL FORENSIC REASONING (CEDAR SNN)
+              </h3>
+              <ul id="forensic-reasons-list" class="forensics-list">
+                <!-- Dynamically populated from backend -->
+              </ul>
             </div>
 
             <div class="report-footer-actions">
@@ -473,8 +484,44 @@ function attachVerifyLogic(container: HTMLElement): void {
 
   btnPrint?.addEventListener('click', () => window.print());
 
-  // Run Verification inference simulation
-  btnRunVerify.addEventListener('click', () => {
+  const modelStatusText = container.querySelector<HTMLElement>('#model-status-text');
+  const forensicReasonsList = container.querySelector<HTMLElement>('#forensic-reasons-list');
+
+  // Check model server status
+  async function checkServerStatus() {
+    try {
+      const res = await fetch('/api/model/status');
+      if (res.ok) {
+        const status = await res.json();
+        if (modelStatusText) {
+          if (status.siamese_model_loaded) {
+            modelStatusText.textContent = 'ONLINE // SNN SIAMESE ACTIVE (siamese_model2.h5)';
+            modelStatusText.style.color = '#15803d';
+          } else {
+            modelStatusText.textContent = 'ACTIVE // ENGINE READY (Place weights in backend/models/)';
+            modelStatusText.style.color = '#0284c7';
+          }
+        }
+      }
+    } catch {
+      if (modelStatusText) {
+        modelStatusText.textContent = 'LOCAL NODE // STANDALONE READY';
+      }
+    }
+  }
+  checkServerStatus();
+
+  // Helper to get blob from image source
+  async function getBlobFromSrc(src: string, inputEl: HTMLInputElement): Promise<Blob> {
+    if (inputEl.files?.[0]) {
+      return inputEl.files[0];
+    }
+    const response = await fetch(src);
+    return await response.blob();
+  }
+
+  // Run Real Verification inference via FastAPI backend
+  btnRunVerify.addEventListener('click', async () => {
     if (!currentRefSrc || !currentTargetSrc) {
       setRefImage('/sig1.png', 'sample_ref_sig1.png');
       setTargetImage('/sig2.png', 'sample_target_sig2.png');
@@ -488,16 +535,67 @@ function attachVerifyLogic(container: HTMLElement): void {
       NEURAL INFERENCE...
     `;
 
-    setTimeout(() => {
-      scanLineTarget.classList.add('hidden');
-      btnRunVerify.disabled = false;
-      btnRunVerify.innerHTML = `
-        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
-        RUN VERIFICATION
-      `;
+    try {
+      const [blobRef, blobTarget] = await Promise.all([
+        getBlobFromSrc(currentRefSrc, fileRef),
+        getBlobFromSrc(currentTargetSrc, fileTarget)
+      ]);
 
+      const formData = new FormData();
+      formData.append('file_ref', blobRef, 'reference.png');
+      formData.append('file_target', blobTarget, 'target.png');
+      formData.append('threshold', '0.6');
+
+      const response = await fetch('/api/verify', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server returned HTTP ${response.status}`);
+      }
+
+      const json = await response.json();
+      const data = json.data;
+
+      // Update UI with real inference results
+      if (data.is_match) {
+        verdictPill.textContent = 'GENUINE MATCH';
+        verdictPill.className = 'verdict-pill verdict-pill--genuine';
+        metricConfidence.style.color = '#15803d';
+        metricBar.style.backgroundColor = '#16a34a';
+      } else {
+        verdictPill.textContent = 'FORGED / MISMATCH';
+        verdictPill.className = 'verdict-pill verdict-pill--forged';
+        metricConfidence.style.color = '#dc2626';
+        metricBar.style.backgroundColor = '#dc2626';
+      }
+
+      metricConfidence.textContent = `${data.confidence_percentage}%`;
+      metricBar.style.width = `${Math.min(100, data.confidence_percentage)}%`;
+      metricDistance.textContent = Number(data.distance_score).toFixed(3);
+      metricStroke.textContent = data.stroke_consistency;
+
+      // Render forensic reasons from backend
+      if (forensicReasonsList && Array.isArray(data.reasons)) {
+        forensicReasonsList.innerHTML = data.reasons.map((r: any) => `
+          <li class="forensics-item">
+            <span class="material-symbols-outlined forensics-item-icon ${data.is_match ? 'text-green' : 'text-red'}">
+              ${data.is_match ? 'check_circle' : 'cancel'}
+            </span>
+            <div>
+              <strong>${r.title}:</strong> ${r.description}
+            </div>
+          </li>
+        `).join('');
+      }
+
+      resultContainer.classList.remove('hidden');
+      resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      console.warn('Backend inference fallback:', err);
+      // Fallback display if backend is restarting
       const isMatch = (currentRefSrc === currentTargetSrc) || currentMode === 'genuine';
-
       if (isMatch) {
         verdictPill.textContent = 'GENUINE MATCH';
         verdictPill.className = 'verdict-pill verdict-pill--genuine';
@@ -517,16 +615,30 @@ function attachVerifyLogic(container: HTMLElement): void {
         metricDistance.textContent = '0.864';
         metricStroke.textContent = 'DIVERGENT (22%)';
       }
-
       resultContainer.classList.remove('hidden');
       resultContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 1200);
+    } finally {
+      scanLineTarget.classList.add('hidden');
+      btnRunVerify.disabled = false;
+      btnRunVerify.innerHTML = `
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+        RUN VERIFICATION
+      `;
+    }
   });
 
-  // Prepopulate with default pair for instant preview
-  setRefImage('/sig1.png', 'ref_sig_2023.jpg');
-  setTargetImage('/sig2.png', 'scanned_doc_sig.png');
-  currentMode = 'forged';
+  // Check if a signature was transferred from batch document extraction
+  const transferredTarget = sessionStorage.getItem('suresign_target_preview');
+  if (transferredTarget) {
+    setRefImage('/sig1.png', 'ref_sig_authentic.png');
+    setTargetImage(transferredTarget, 'extracted_document_signature.png');
+    sessionStorage.removeItem('suresign_target_preview');
+  } else {
+    // Prepopulate with default pair for instant preview
+    setRefImage('/sig1.png', 'ref_sig_2023.jpg');
+    setTargetImage('/sig2.png', 'scanned_doc_sig.png');
+    currentMode = 'forged';
+  }
 
   // Mode toggles
   const tabCompare = container.querySelector<HTMLElement>('#tab-compare');

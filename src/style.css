@@ -2853,6 +2853,56 @@ html.lenis body {
   color: #1d4ed8;
 }
 
+.report-forensics-box {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 1.25rem;
+  box-shadow: 4px 4px 0 0 #000;
+  margin-top: 1rem;
+}
+
+.forensics-title {
+  font-family: var(--ff-mono);
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #000;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.forensics-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.forensics-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: #1f2937;
+}
+
+.forensics-item-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.forensics-item strong {
+  font-family: var(--ff-mono);
+  color: #000;
+}
+
 .hidden {
   display: none !important;
 }
